@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Parking System</title>
+  <style>
+    :root{ --bg:#f6f7fb; --surface:#fff; --line:#d7dbe6; --line-2:#c7ccda; --text:#1c2330; --muted:#667085; --shadow:0 10px 30px rgba(16,24,40,.08); }
+    *{ box-sizing:border-box; } html,body{height:100%}
+    body{ margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; color:var(--text);
+      background: radial-gradient(1200px 500px at 20% -10%, #ffffff 0%, rgba(255,255,255,0) 60%),
+                  radial-gradient(900px 450px at 90% 0%, #ffffff 0%, rgba(255,255,255,0) 55%),
+                  var(--bg);
+    }
+    .wrap{ max-width:1200px; margin:26px auto; padding:0 16px;}
+    .shell{ background:rgba(255,255,255,.55); border:1px solid var(--line); border-radius:26px; padding:18px; box-shadow:var(--shadow); backdrop-filter:blur(6px);}
+    .topbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px; border:1px solid var(--line); border-radius:18px; background:rgba(255,255,255,.9);}
+    .brand{ display:flex; align-items:center; gap:12px; min-width:220px;}
+    .brand .logo{ width:42px; height:42px; border-radius:14px; border:1px solid var(--line); background:linear-gradient(180deg,#fff,#f3f5fb); display:flex; align-items:center; justify-content:center;}
+    .brand h1{ font-size:20px; margin:0; font-weight:700;}
+    .meta{ display:flex; align-items:center; gap:10px; color:var(--muted); font-size:14px; white-space:nowrap;}
+    .pill{ display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:999px; border:1px solid var(--line); background:#fff;}
+    .dot{ width:8px; height:8px; border-radius:999px; background:#12b76a; box-shadow:0 0 0 3px rgba(18,183,106,.15);}
+    .btn{ display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:999px; border:1px solid var(--line); background:#fff; color:var(--text); cursor:pointer; font-weight:800;}
+    .kpis{ margin-top:14px; display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+    .kpi{ background:rgba(255,255,255,.9); border:1px solid var(--line); border-radius:18px; padding:14px; display:flex; align-items:center; justify-content:space-between;}
+    .kpi .left{ display:flex; align-items:center; gap:10px;}
+    .kpi .icon{ width:38px; height:38px; border-radius:14px; border:1px solid var(--line); background:linear-gradient(180deg,#fff,#f3f5fb); display:flex; align-items:center; justify-content:center;}
+    .kpi .label{ font-size:14px; color:var(--muted); margin:0;}
+    .kpi .value{ font-size:28px; font-weight:800; margin:0;}
+    .main{ margin-top:12px; display:grid; grid-template-columns:360px 1fr; gap:12px;}
+    .card{ background:rgba(255,255,255,.9); border:1px solid var(--line); border-radius:18px; overflow:hidden;}
+    .card-hd{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line); background:linear-gradient(180deg,#fff,#fafbff);}
+    .card-hd h2{ font-size:16px; margin:0; font-weight:800;}
+    .dots{ display:flex; gap:4px; opacity:.6;} .dots span{ width:4px; height:4px; border-radius:999px; background:#98a2b3;}
+    .card-bd{ padding:14px;}
+    .search{ display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:14px; background:#fff; color:var(--muted);}
+    .search input{ border:none; outline:none; width:100%; font-size:14px; background:transparent;}
+    .badge{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:#fbfcff; font-size:12px; color:var(--muted); white-space:nowrap;}
+    .list{ margin-top:12px; display:flex; flex-direction:column; gap:10px; max-height:520px; overflow:auto; padding-right:4px;}
+    .row{ border:1px solid var(--line); border-radius:16px; background:#fff; padding:12px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+    .row .plate{ font-weight:900; font-size:18px; margin:0 0 6px 0; letter-spacing:.4px;}
+    .row .sub{ display:flex; gap:10px; align-items:center; color:var(--muted); font-size:13px;}
+    .right{ display:grid; grid-template-columns:1fr 360px; gap:12px; align-content:start;}
+    .camera{ display:flex; flex-direction:column; gap:12px;}
+    .cam-frame{ border:1px solid var(--line); background:#f1f3f9; border-radius:16px; overflow:hidden; aspect-ratio:16/9; position:relative; }
+    .cam-frame img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .cam-overlay{ position:absolute; left:10px; bottom:10px; padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,.85); font-size:12px; font-weight:900; max-width:92%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+    .cam-info{ border:1px solid var(--line); border-radius:16px; background:#fff; padding:12px; display:grid; gap:8px;}
+    .kv{ display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:14px;}
+    .kv .k{ color:var(--muted);} .kv .v{ font-weight:700;}
+    .status{ display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--line); border-radius:999px; background:#fff; width:fit-content; color:var(--muted); font-size:13px;}
+    .status .ring{ width:12px; height:12px; border-radius:999px; border:2px solid #98a2b3;}
+    @media (max-width:1020px){ .main{grid-template-columns:1fr;} .right{grid-template-columns:1fr;} .list{max-height:360px;} }
+    @media (max-width:720px){ .kpis{grid-template-columns:1fr;} .topbar{flex-direction:column; align-items:flex-start;} .meta{width:100%; justify-content:space-between; flex-wrap:wrap;} }
+
+    /* modal */
+    .modal{ position:fixed; inset:0; background:rgba(15,23,42,.38); display:none; align-items:center; justify-content:center; padding:18px; z-index:50;}
+    .modal.open{ display:flex;}
+    .modal-card{ width:min(560px,100%); border-radius:20px; border:1px solid var(--line); background:rgba(255,255,255,.96); box-shadow:var(--shadow); overflow:hidden;}
+    .modal-hd{ padding:14px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:10px;}
+    .modal-hd h3{ margin:0; font-size:16px; font-weight:900;}
+    .modal-bd{ padding:16px; display:grid; gap:12px;}
+    .field{ display:grid; gap:6px;}
+    .field label{ font-size:13px; color:var(--muted); font-weight:800;}
+    .field input, .field select{ width:100%; padding:12px; border:1px solid var(--line); border-radius:14px; outline:none; font-size:14px; background:#fff;}
+    .row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+    .modal-ft{ padding:14px 16px; border-top:1px solid var(--line); display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;}
+    .btn-primary{ border-color:transparent; background:#111827; color:#fff;}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="shell">
+
+      <div class="topbar">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">🚗</div>
+          <h1>Smart Parking System</h1>
+        </div>
+
+        <div class="meta">
+          <span class="pill"><span id="dateText"></span></span>
+          <span class="pill"><span class="dot"></span><span>Realtime</span></span>
+          <button class="btn" id="btnSettings">⚙ Settings</button>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="left"><div class="icon">🚘</div><p class="label">Tổng xe hôm nay</p></div><p class="value" id="kpiTotal">0</p></div>
+        <div class="kpi"><div class="left"><div class="icon">🅿️</div><p class="label">Đang đỗ</p></div><p class="value" id="kpiParked">0</p></div>
+        <div class="kpi"><div class="left"><div class="icon">✅</div><p class="label">Còn trống</p></div><p class="value" id="kpiFree">0</p></div>
+      </div>
+
+      <div class="main">
+        <div class="card">
+          <div class="card-hd"><h2>Danh sách xe đang gửi</h2><div class="dots"><span></span><span></span><span></span></div></div>
+          <div class="card-bd">
+            <div class="search">
+              🔎 <input id="searchInput" placeholder="Tìm biển số..." />
+              <span class="badge" id="countBadge">0 xe</span>
+            </div>
+            <div class="list" id="carList"></div>
+          </div>
+        </div>
+
+        <div class="right">
+          <div class="card">
+            <div class="card-hd"><h2>Camera vào</h2><div class="dots"><span></span><span></span><span></span></div></div>
+            <div class="card-bd camera">
+              <div class="cam-frame">
+                <img id="camIn" alt="Camera vào" src="{{ in_latest }}?t=0" />
+                <div class="cam-overlay">IN • {{ meta.in_updated }}</div>
+              </div>
+              <div class="cam-info">
+                <div class="kv"><span class="k">Biển số</span><span class="v" id="inPlate">—</span></div>
+                <div class="kv"><span class="k">Giờ vào</span><span class="v" id="inTime">—</span></div>
+                <div class="kv"><span class="k">Trạng thái</span><span class="v" id="inStatus">—</span></div>
+                <div class="kv"><span class="k">Thiết bị</span><span class="v" style="font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cam_in_stream }}</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid; gap:12px; align-content:start;">
+            <div class="card">
+              <div class="card-hd"><h2>Camera ra</h2><div class="dots"><span></span><span></span><span></span></div></div>
+              <div class="card-bd camera">
+                <div class="cam-frame">
+                  <img id="camOut" alt="Camera ra" src="{{ out_latest }}?t=0" />
+                  <div class="cam-overlay">OUT • {{ meta.out_updated }}</div>
+                </div>
+                <div class="cam-info">
+                  <div class="kv"><span class="k">Thời gian gửi</span><span class="v" id="stayTime">0 phút</span></div>
+                  <div class="kv"><span class="k">Phí</span><span class="v" id="fee">0 VND</span></div>
+                  <div class="kv"><span class="k">Thiết bị</span><span class="v" style="font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cam_out_stream }}</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-hd"><h2>Thanh toán</h2><div class="dots"><span></span><span></span><span></span></div></div>
+              <div class="card-bd">
+                <div class="status" id="payStatus"><span class="ring"></span><span>Đã thanh toán</span></div>
+                <div style="height:10px"></div>
+                <div class="kv"><span class="k">Biển số</span><span class="v" id="outPlate">—</span></div>
+                <div class="kv"><span class="k">Trạng thái</span><span class="v" id="outStatus">—</span></div>
+                <div style="height:14px"></div>
+                <button id="togglePay" class="btn" style="width:100%;justify-content:center;">Thanh toán (tự động)</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal settings -->
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div class="modal-hd">
+        <h3>Cấu hình hệ thống</h3>
+        <button class="btn" id="btnClose">✕</button>
+      </div>
+
+      <div class="modal-bd">
+        <div class="row2">
+          <div class="field">
+            <label>Webcam vào</label>
+            <select id="camInDevice"></select>
+          </div>
+          <div class="field">
+            <label>Webcam ra</label>
+            <select id="camOutDevice"></select>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label>Độ phân giải (CAM IN)</label>
+            <select id="camInRes">
+              <option value="1280x720">1280x720</option>
+              <option value="1920x1080">1920x1080</option>
+              <option value="640x480">640x480</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Độ phân giải (CAM OUT)</label>
+            <select id="camOutRes">
+              <option value="1280x720">1280x720</option>
+              <option value="1920x1080">1920x1080</option>
+              <option value="640x480">640x480</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label>Serial port (ESP32)</label>
+            <select id="serialPort"></select>
+          </div>
+          <div class="field">
+            <label>Baudrate</label>
+            <select id="serialBaud"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-ft">
+        <button class="btn btn-primary" id="btnSave">Lưu & reload</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // date
+    const d = new Date();
+    document.getElementById("dateText").textContent =
+      `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
+
+    // list
+    let cars = [];
+    const carListEl = document.getElementById("carList");
+    const searchInput = document.getElementById("searchInput");
+    const countBadge = document.getElementById("countBadge");
+
+    function renderList(filterText = "") {
+      const t = filterText.trim().toLowerCase();
+      const filtered = cars.filter(c => (c.plate || "").toLowerCase().includes(t));
+      countBadge.textContent = `${filtered.length} xe`;
+      carListEl.innerHTML = "";
+      filtered.forEach((c) => {
+        const row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML = `
+          <div>
+            <p class="plate">${c.plate || "—"}</p>
+            <div class="sub">
+              <span class="badge">⏱ ${c.time || "—"}</span>
+              <span class="badge">📍 ${c.slot || "--"}</span>
+              ${c.rfid ? `<span class="badge">🏷 ${c.rfid}</span>` : ""}
+            </div>
+          </div>
+          <span class="badge">…</span>
+        `;
+        row.onclick = () => {
+          document.getElementById("inPlate").textContent = c.plate || "—";
+          document.getElementById("outPlate").textContent = c.plate || "—";
+          document.getElementById("inTime").textContent = c.time || "—";
+          document.getElementById("inStatus").textContent = "Đang gửi";
+          document.getElementById("outStatus").textContent = "—";
+        };
+        carListEl.appendChild(row);
+      });
+    }
+    searchInput.addEventListener("input", e => renderList(e.target.value));
+    renderList();
+
+    // load dashboard (Excel)
+    async function loadDashboard() {
+      try {
+        const res = await fetch("/api/dashboard", { cache: "no-store" });
+        const data = await res.json();
+        const k = data.kpis || { total: 0, parked: 0, free: 0 };
+
+        document.getElementById("kpiTotal").textContent = k.total ?? 0;
+        document.getElementById("kpiParked").textContent = k.parked ?? 0;
+        document.getElementById("kpiFree").textContent = k.free ?? 0;
+
+        cars = data.parked || [];
+        renderList(searchInput.value);
+
+        if (data.last_in) {
+          document.getElementById("inPlate").textContent = data.last_in.plate || "—";
+          document.getElementById("inTime").textContent = data.last_in.in_time || "—";
+          document.getElementById("inStatus").textContent = data.last_in.out_time ? "Đã ra" : "Đang gửi";
+          document.getElementById("outPlate").textContent = data.last_in.plate || "—";
+        }
+        if (data.last_out) {
+          document.getElementById("outStatus").textContent = "Đã thanh toán";
+          document.getElementById("fee").textContent = (data.last_out.fee || 0).toLocaleString("vi-VN") + " VND";
+
+          const inStr = data.last_out.in_time;
+          const outStr = data.last_out.out_time;
+          if (inStr && outStr) {
+            const parseVN = (s) => {
+              const [dmy, hms] = s.split(" ");
+              if (!dmy || !hms) return null;
+              const [dd, mm, yy] = dmy.split("/").map(Number);
+              const [HH, MM, SS] = hms.split(":").map(Number);
+              return new Date(yy, mm - 1, dd, HH, MM, SS || 0);
+            };
+            const a = parseVN(inStr);
+            const b = parseVN(outStr);
+            if (a && b) {
+              const minutes = Math.max(0, Math.round((b - a) / 60000));
+              document.getElementById("stayTime").textContent = minutes + " phút";
+            }
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    loadDashboard();
+    setInterval(loadDashboard, 2000);
+
+    // payment: status comes from Excel (server)
+    document.getElementById("togglePay").onclick = () => {};
+
+    // modal
+    const modal = document.getElementById("modal");
+    document.getElementById("btnSettings").onclick = async () => {
+      modal.classList.add("open");
+      await loadOptionsIntoSettings();
+    };
+    document.getElementById("btnClose").onclick = () => modal.classList.remove("open");
+    modal.onclick = (e) => { if (e.target === modal) modal.classList.remove("open"); };
+
+    async function loadOptionsIntoSettings() {
+      try {
+        const res = await fetch("/api/options", { cache: "no-store" });
+        const opt = await res.json();
+
+        const cfg = opt.current || {};
+        const curIn = cfg.cam_in || {};
+        const curOut = cfg.cam_out || {};
+        const curSer = cfg.serial || {};
+
+        // webcams
+        const camInSel = document.getElementById("camInDevice");
+        const camOutSel = document.getElementById("camOutDevice");
+        camInSel.innerHTML = "";
+        camOutSel.innerHTML = "";
+
+        (opt.webcams || []).forEach(w => {
+          const o1 = document.createElement("option");
+          o1.value = w.id;
+          o1.textContent = w.name;
+          camInSel.appendChild(o1);
+
+          const o2 = document.createElement("option");
+          o2.value = w.id;
+          o2.textContent = w.name;
+          camOutSel.appendChild(o2);
+        });
+
+        camInSel.value = (curIn.device ?? 0);
+        camOutSel.value = (curOut.device ?? 1);
+
+        // serial ports
+        const portSel = document.getElementById("serialPort");
+        portSel.innerHTML = "";
+        const ports = opt.serial_ports || [];
+        if (ports.length === 0) {
+          const o = document.createElement("option");
+          o.value = "";
+          o.textContent = "Không tìm thấy COM";
+          portSel.appendChild(o);
+        } else {
+          const o0 = document.createElement("option");
+          o0.value = "";
+          o0.textContent = "(Chưa chọn)";
+          portSel.appendChild(o0);
+
+          ports.forEach(p => {
+            const o = document.createElement("option");
+            o.value = p.port;
+            o.textContent = p.desc ? `${p.port} — ${p.desc}` : p.port;
+            portSel.appendChild(o);
+          });
+        }
+        portSel.value = (curSer.port ?? "");
+
+        // baudrates
+        const baudSel = document.getElementById("serialBaud");
+        baudSel.innerHTML = "";
+        (opt.baudrates || [115200]).forEach(b => {
+          const o = document.createElement("option");
+          o.value = b;
+          o.textContent = b;
+          baudSel.appendChild(o);
+        });
+        baudSel.value = (curSer.baud ?? 115200);
+
+        // resolutions
+        const inRes = document.getElementById("camInRes");
+        const outRes = document.getElementById("camOutRes");
+        inRes.value = `${curIn.width ?? 1280}x${curIn.height ?? 720}`;
+        outRes.value = `${curOut.width ?? 1280}x${curOut.height ?? 720}`;
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    // save config
+    document.getElementById("btnSave").onclick = async () => {
+      const [inW, inH] = document.getElementById("camInRes").value.split("x").map(Number);
+      const [outW, outH] = document.getElementById("camOutRes").value.split("x").map(Number);
+
+      const payload = {
+        cam_in: {
+          device: Number(document.getElementById("camInDevice").value),
+          width: inW,
+          height: inH
+        },
+        cam_out: {
+          device: Number(document.getElementById("camOutDevice").value),
+          width: outW,
+          height: outH
+        },
+        serial: {
+          port: document.getElementById("serialPort").value,
+          baud: Number(document.getElementById("serialBaud").value)
+        }
+      };
+
+      await fetch("/api/config", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      location.reload();
+    };
+
+    // auto refresh snapshots (avoid cache)
+    function refreshSnapshots() {
+      const ts = Date.now();
+      const inImg = document.getElementById("camIn");
+      const outImg = document.getElementById("camOut");
+      if (inImg)  inImg.src  = "{{ in_latest }}?t=" + ts;
+      if (outImg) outImg.src = "{{ out_latest }}?t=" + ts;
+    }
+    setInterval(refreshSnapshots, 800);
+  </script>
+</body>
+</html>

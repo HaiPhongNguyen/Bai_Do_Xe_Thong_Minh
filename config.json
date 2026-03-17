@@ -1,0 +1,30 @@
+{
+  "cam_in": {
+    "device": 1,
+    "width": 1280,
+    "height": 720
+  },
+  "cam_out": {
+    "device": 0,
+    "width": 1280,
+    "height": 720
+  },
+  "serial": {
+    "port": "",
+    "baud": 115200
+  },
+  "wifi": {
+    "host": "0.0.0.0",
+    "port": 3333
+  },
+  "app": {
+    "snapshot_mode": "fresh"
+  },
+  "gsheet": {
+    "enabled": true,
+    "creds_path": "service_account.json",
+    "spreadsheet_id": "1FtpRneaEMJZygdqjjd_sM4OzCm38GFpDeEGQKASeKOM",
+    "worksheet_title": "Sheet1",
+    "queue_path": "/mnt/data/gsheet_queue.jsonl"
+  }
+}
